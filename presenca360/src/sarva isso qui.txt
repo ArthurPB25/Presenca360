@@ -1,0 +1,314 @@
+import React, { useState } from "react";
+
+export default function PaginaProfessorCu() {
+  /* Telas: "menu" | "datas" | "lista" | "liberar" */
+  const [tela, setTela] = useState("menu");
+
+  /* senha da sala (string vazia por padrão) */
+  const [senhaSala, setSenhaSala] = useState("");
+
+  /* datas (vazio — será populado pelo backend no futuro) */
+  const [datas, setDatas] = useState([]);
+  const [dataSelecionada, setDataSelecionada] = useState(null);
+
+  /* lista de presença (vazia — será populada pelo backend) */
+  const [listaPresenca, setListaPresenca] = useState([]);
+
+  /* modal de buscar/editar aluno */
+  const [modalAluno, setModalAluno] = useState(false);
+  const [alunoBusca, setAlunoBusca] = useState("");
+
+  /* modal liberar app (simples placeholder) */
+  const [modalLiberarApp, setModalLiberarApp] = useState(false);
+
+  /* Funções (todos os efeitos são locais — preparados para integrar com DB) */
+  function handleIniciar() {
+    // gera senha aleatória de 6 dígitos e exibe no campo SENHA
+    const s = Math.floor(100000 + Math.random() * 900000).toString();
+    setSenhaSala(s);
+  }
+
+  function handleGerenciarPresenca() {
+    // muda para a tela de datas; as datas ficam vazias (o backend deve preencher)
+    setTela("datas");
+  }
+
+  function handleSelecionarData(d) {
+    // seleciona a data e vai para a tela da lista; lista vazia por enquanto
+    setDataSelecionada(d);
+    setListaPresenca([]); // limpar lista — o back vai popular
+    setTela("lista");
+  }
+
+  function handleAbrirBuscaAluno() {
+    setAlunoBusca("");
+    setModalAluno(true);
+  }
+
+  function handleAtualizarStatusAluno(status) {
+    // Placeholder: atualiza apenas localmente se o aluno existir na lista
+    // (no futuro, chamará API para atualizar no DB)
+    if (!alunoBusca) return;
+
+    setListaPresenca(prev => {
+      // se lista vazia, não faz nada (pois sem dados nao cria registros)
+      if (!prev || prev.length === 0) return prev;
+      return prev.map(a =>
+        a.nome && a.nome.toLowerCase() === alunoBusca.toLowerCase()
+          ? { ...a, status }
+          : a
+      );
+    });
+
+    setModalAluno(false);
+  }
+
+  function handleFinalizarSessao() {
+    // Placeholder: limpa estado local e volta para menu
+    setSenhaSala("");
+    setDataSelecionada(null);
+    setListaPresenca([]);
+    setTela("menu");
+  }
+
+  function handleDisponibilizarApp() {
+    // abre modal de liberação de app (placeholder)
+    setModalLiberarApp(true);
+  }
+
+  function handleSalvarPresenca() {
+    // Placeholder: aqui você chamaria a API para salvar a lista
+    // Por enquanto apenas fecha/volta pro menu
+    setTela("menu");
+  }
+
+  /* Render: mantemos o layout fiel aos mockups (cores/posições) */
+  return (
+    <div className="w-full min-h-screen flex bg-white text-black">
+      {/* SIDEBAR esquerda (perfil / finalizar sessão / liberar app) */}
+      <aside className="w-64 bg-red-600 p-6 flex flex-col justify-between rounded-r-xl">
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">👤</div>
+            <div>
+              <div className="text-sm">Perfil</div>
+            </div>
+          </div>
+
+          <button
+            className="text-sm underline"
+            onClick={handleFinalizarSessao}
+            aria-label="Finalizar sessão"
+          >
+            finalizar sessão
+          </button>
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            className="bg-white text-black px-4 py-3 rounded-xl w-full text-center"
+            onClick={handleDisponibilizarApp}
+            aria-label="Disponibilizar app"
+          >
+            disponibilizar app
+          </button>
+        </div>
+      </aside>
+
+      {/* CONTEÚDO principal */}
+      <main className="flex-1 p-6">
+        {/* topo com botões principais e logo (estilo mockup) */}
+        <header className="flex items-center justify-between mb-6">
+          <div className="flex gap-3">
+            <button
+              className="bg-red-600 text-white px-6 py-2 rounded-xl font-bold"
+              onClick={handleIniciar}
+              aria-label="Iniciar"
+            >
+              Iniciar
+            </button>
+
+            <button
+              className="bg-red-600 text-white px-6 py-2 rounded-xl font-bold"
+              onClick={handleGerenciarPresenca}
+              aria-label="Gerenciar presença"
+            >
+              Gerenciar presença
+            </button>
+          </div>
+
+          {/* logo — usamos path do mockup como placeholder visual */}
+          <img
+            src="/mnt/data/2c61662e-7ffc-4fc8-8e44-1743dfabe22a.png"
+            alt="logo-mockup"
+            className="w-24 h-12 object-contain"
+          />
+        </header>
+
+        {/* linha com botão de lista e campo SENHA (igual mockup) */}
+        <section className="flex gap-4 mb-6 items-center">
+          <button className="bg-red-400 text-black px-6 py-2 rounded-xl font-bold">Lista de presença</button>
+
+          <div className="bg-red-400 text-black px-6 py-2 rounded-xl font-bold">
+            SENHA: <span className="font-mono">{senhaSala || "---"}</span>
+          </div>
+        </section>
+
+        {/* TELA: menu | datas | lista | liberar (controlado por 'tela') */}
+        <section>
+          {tela === "menu" && (
+            <div className="p-4">
+              {/* Espaço neutro igual ao mockup — sem dados */}
+              <div className="bg-blue-50 border border-dashed border-gray-200 rounded-xl p-8 text-center">
+                <p className="text-sm text-gray-500">Use os botões acima para iniciar ações</p>
+              </div>
+            </div>
+          )}
+
+          {tela === "datas" && (
+            <div className="p-4">
+              <div className="bg-white shadow rounded-xl p-4 w-full max-w-xl">
+                <h3 className="font-bold mb-3">Datas</h3>
+
+                {/* Lista vazia — apenas placeholders visuais (sem informação) */}
+                <div className="flex flex-col gap-2">
+                  {/* Renderizamos placeholders vazios (sem texto) para manter o layout */}
+                  <button
+                    className="text-left border-b py-3"
+                    onClick={() => handleSelecionarData(/* no-data placeholder */ null)}
+                  >
+                    {/* vazio intencional — o backend preencherá as datas */}
+                    <span className="text-gray-400">(sem dados)</span>
+                  </button>
+
+                  <button
+                    className="text-left border-b py-3"
+                    onClick={() => handleSelecionarData(/* no-data placeholder */ null)}
+                  >
+                    <span className="text-gray-400">(sem dados)</span>
+                  </button>
+
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      className="px-4 py-2 bg-gray-200 rounded"
+                      onClick={() => setTela("menu")}
+                    >
+                      Voltar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tela === "lista" && (
+            <div className="p-4">
+              <div className="bg-blue-600 text-white p-6 rounded-xl">
+                <h3 className="font-bold">DATA: {dataSelecionada || "(sem dados)"}</h3>
+
+                <p className="mt-4 mb-2">Alunos:</p>
+
+                <div className="bg-white text-black p-3 rounded-lg max-h-72 overflow-y-auto">
+                  {/* Lista vazia por padrão — sem nomes */}
+                  {listaPresenca.length === 0 ? (
+                    <div className="text-gray-500 py-6 text-center">Nenhum registro disponível</div>
+                  ) : (
+                    listaPresenca.map((a, i) => (
+                      <div key={i} className="flex justify-between border-b py-2">
+                        <span>{a.nome}</span>
+                        <span>{a.status}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="mt-4 flex gap-3">
+                  <button
+                    className="bg-yellow-400 text-black px-4 py-2 rounded-lg"
+                    onClick={handleAbrirBuscaAluno}
+                  >
+                    Buscar aluno
+                  </button>
+
+                  <button
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg ml-auto"
+                    onClick={handleSalvarPresenca}
+                  >
+                    Salvar
+                  </button>
+
+                  <button
+                    className="px-4 py-2 bg-gray-200 rounded"
+                    onClick={() => setTela("menu")}
+                  >
+                    Voltar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tela === "liberar" && (
+            <div className="p-4">
+              <div className="bg-white shadow rounded-xl p-6 w-full max-w-md">
+                <h3 className="font-bold mb-3">Liberar App</h3>
+                <p className="text-gray-500 mb-4">Ação de liberar aplicativo para alunos (placeholder)</p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    className="px-4 py-2 bg-gray-200 rounded"
+                    onClick={() => setTela("menu")}
+                  >
+                    Voltar
+                  </button>
+
+                  <button
+                    className="px-4 py-2 bg-red-600 text-white rounded"
+                    onClick={() => setModalLiberarApp(true)}
+                  >
+                    Liberar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      </main>
+
+      {/* Modal aluno (buscar/atribuir status) */}
+      {modalAluno && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-96">
+            <h4 className="font-semibold mb-2">Buscar aluno</h4>
+            <input
+              value={alunoBusca}
+              onChange={e => setAlunoBusca(e.target.value)}
+              placeholder="Digite o nome"
+              className="w-full border p-2 rounded mb-3"
+            />
+
+            <div className="flex gap-3 justify-end">
+              <button className="px-4 py-2 bg-red-400 text-white rounded" onClick={() => handleAtualizarStatusAluno("Falta")}>Falta</button>
+              <button className="px-4 py-2 bg-green-500 text-white rounded" onClick={() => handleAtualizarStatusAluno("Presente")}>Veio</button>
+              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => handleAtualizarStatusAluno("Justificado")}>Justificativa</button>
+            </div>
+
+            <button className="mt-4 w-full px-4 py-2 bg-gray-100 rounded" onClick={() => setModalAluno(false)}>Fechar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal liberar app */}
+      {modalLiberarApp && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-96">
+            <h4 className="font-semibold mb-2">Liberar App</h4>
+            <p className="text-gray-500 mb-4">Placeholder: ação de liberar app para alunos.</p>
+            <div className="flex gap-2 justify-end">
+              <button className="px-4 py-2 bg-gray-200 rounded" onClick={() => setModalLiberarApp(false)}>Fechar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
